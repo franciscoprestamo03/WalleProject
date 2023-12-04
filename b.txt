@@ -1,0 +1,1 @@
+point sequence ps a,b,c,d,rest = ps m1 = measure(a,b); m2 = measure(c,d);
