@@ -145,32 +145,14 @@ namespace Compiler
                     return new VariableDeclarationNode(pointName.Value, sequenceNode, VariableType.Implicit);
                 }else if (Match(TokenType.LeftParenthesisToken))
                 {
-                    TokenM id1 = Advance();
+                    Node id1 = ParseStatement();
                     Consume(TokenType.CommaToken, "Expected ',' ");
-                    TokenM id2 = Advance();
+                    Node id2 = ParseStatement();
 
                     Consume(TokenType.RightParenthesisToken, "Expected ')' after line parameters.");
-                    if (id1.Type == TokenType.NumberToken && id2.Type == TokenType.NumberToken)
-                    {
-                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(),
-                            new NumberNode(int.Parse(id1.Value)), new NumberNode(int.Parse(id2.Value)));
-                    }
-                    else if (id1.Type == TokenType.NumberToken && id2.Type == TokenType.IdentifierToken)
-                    {
-                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(),
-                            new NumberNode(int.Parse(id1.Value)), new VariableReferenceNode(id2.Value));
-                    }
-                    else if (id2.Type == TokenType.NumberToken && id1.Type == TokenType.IdentifierToken)
-                    {
-                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(), new VariableReferenceNode(id1.Value),
-                            new NumberNode(int.Parse(id2.Value)));
-                    }
-                    else if (id2.Type == TokenType.IdentifierToken && id1.Type == TokenType.IdentifierToken)
-                    {
-                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(), new VariableReferenceNode(id1.Value),
-                            new VariableReferenceNode(id2.Value));
-                    }
-                    
+
+                    return new PointDeclarationNode("point", id1, id2);
+
                 }
 
 
@@ -441,7 +423,7 @@ namespace Compiler
                     if (Check(TokenType.ReturnToken))
                     {
                         Advance();
-                        Node returnValue = ParseExpression();
+                        Node returnValue = ParseStatement();
                         Consume(TokenType.SemicolonToken, "Expected ';' after return statement.");
                         returnNode = returnValue;
                         break;
