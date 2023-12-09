@@ -65,13 +65,75 @@ namespace Compiler
                     Counter--;
                     return result;
                 case SequenceNode sequenceNode:
+                    if (!sequenceNode.IsInfinite)
+                    {
+                        List<Node> list01 = new List<Node>();
+                        foreach (var item in sequenceNode)
+                        {
+                            Debug.Log("aaaaaaaaaqaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                            if (item is Node node01)
+                            {
+                                if (node01 is VariableReferenceNode varRef1)
+                                {
+                                    var a = Evaluate(varRef1);
+                                    if (a is double d)
+                                    {
+                                        list01.Add(new NumberNode(d));
+                                    }
+                                    else if (a is string s)
+                                    {
+                                        list01.Add(new StringNode(s));
+                                    }
+                                    else if (a is Point p)
+                                    {
+                                        list01.Add(new PointDeclarationNode(p.Name,new NumberNode(p.X),new NumberNode(p.Y)));
+                                    }else if (a is Circle c)
+                                    {
+                                        list01.Add(new CircleDeclarationNode(c.Name,c.Center,new NumberNode(c.Radius)));
+                                    }
+                                }
+                                else
+                                {
+                                    list01.Add(node01);
+                                }
+                                
+                            }
+                            else
+                            {
+                                if (item is double d)
+                                {
+                                    list01.Add(new NumberNode(d));
+                                }
+                                else if (item is string s)
+                                {
+                                    list01.Add(new StringNode(s));
+                                }
+                                else if (item is Point p)
+                                {
+                                    list01.Add(new PointDeclarationNode(p.Name,new NumberNode(p.X),new NumberNode(p.Y)));
+                                }else if (item is Circle c)
+                                {
+                                    list01.Add(new CircleDeclarationNode(c.Name,c.Center,new NumberNode(c.Radius)));
+                                }
+                            }
+                            
+                            
+                        }
+                        Debug.Log("nojdsjcndijvcndncojdwsncdojkcndocmdckmk");
+                        Debug.Log($"{list01[0]} {list01[1]}");
+                        SequenceNode sequenceNode01 = new SequenceNode(list01,"objects");
+                        return sequenceNode01;
+                    }
+                    
                     return sequenceNode;
                 case MultipleVariableDeclarationNode multipleVariableDeclarationNode:
                     int j = 0;
                     Debug.Log("fase 0");
                     Debug.Log(Evaluate(multipleVariableDeclarationNode.SequenceN));
                     SequenceNode sequence = (SequenceNode)Evaluate(multipleVariableDeclarationNode.SequenceN);
+
                     int prevIndex = sequence.Index;
+
                     foreach (var item2 in sequence)
                     {
                         object item;
@@ -126,7 +188,7 @@ namespace Compiler
                     }
 
                     sequence.Index = prevIndex;
-                    return null;
+                    return sequence;
                 case PointDeclarationNode pointDeclarationNode:
                     Counter--;
 
@@ -267,7 +329,7 @@ namespace Compiler
                                 Dictionary<string, Instaciable>? dic = FindINstanciableScope(varRef.Name);
                                 if (dic is null)
                                 {
-                                    throw new Exception("Hay algo mal ");
+                                    throw new Exception($"Hay algo mal variable: {varRef.Name}");
                                 }
 
                                 Instaciable instance = dic[varRef.Name];

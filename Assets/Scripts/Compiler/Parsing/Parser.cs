@@ -63,7 +63,7 @@ namespace Compiler
             else if (Match(TokenType.LeftBraceToken))
             {
                 TokenM SequenceDesignator1 = Advance();
-                Debug.Log("secuencia tipo: "+SequenceDesignator1.Value+ "de tipo: "+SequenceDesignator1.Type);
+                Debug.Log("secuencia tipo: "+SequenceDesignator1.Value+ " de tipo: "+SequenceDesignator1.Type);
 
                 if (SequenceDesignator1.Type == TokenType.NumberToken)
                 {
@@ -101,10 +101,11 @@ namespace Compiler
                 }
                 else if (SequenceDesignator1.Type == TokenType.IdentifierToken)
                 {
-                    Debug.Log("Sequence with identifier");
+                    Debug.Log("Sequence with identifier$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
                     TokenM SequenceDesignator2 = Advance();
                     if (SequenceDesignator2.Type == TokenType.CommaToken)
                     {
+                        Debug.Log("todo ok $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
                         List<Node> nodesA = new List<Node>();
                         nodesA.Add(new VariableReferenceNode(SequenceDesignator1.Value));
                         
@@ -116,13 +117,10 @@ namespace Compiler
                             {
                                 nodesA.Add(new VariableReferenceNode(actualToken.Value));
                             }
-                            else if (actualToken.Type == TokenType.NumberToken)
-                            {
-                                nodesA.Add(new NumberNode(int.Parse(actualToken.Value)));
-                            }
                             
                         } while (Match(TokenType.CommaToken));
                         Consume(TokenType.RightBraceToken, "Expected '}' after sequence declaration");
+                        Debug.Log($"{nodesA.Count} $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$");
                         return new SequenceNode(nodesA, "ids");
                     }
                 }
@@ -290,7 +288,7 @@ namespace Compiler
 
                     Consume(TokenType.RightBraceToken, "Expected '}' token");
                 }
-                Debug.Log("Draw token bbbbbb");
+                
                 return new DrawNode(instanciables);
             }
             else if (Match(TokenType.IfToken))

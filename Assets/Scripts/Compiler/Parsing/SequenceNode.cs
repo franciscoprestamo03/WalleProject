@@ -16,7 +16,7 @@ namespace Compiler
         public int Initial { get; set; }
         public int End { get; }
 
-        public SequenceNode( List<Node> elements,string type,int index=0,bool isInfinite = true, int initial = 0, int end = 0)
+        public SequenceNode( List<Node> elements,string type,int index=0,bool isInfinite = false, int initial = 0, int end = 0)
         {
             Elements = elements;
             Type = type;
@@ -28,6 +28,7 @@ namespace Compiler
         
         public IEnumerator<object> GetEnumerator()
         {
+            Debug.Log($"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb   {Type} {Elements.Count} {Index}");
             if (Type == "")
             {
 
@@ -98,6 +99,7 @@ namespace Compiler
                 }
                 else
                 {
+                    
                     yield return new Undefined();;
                 }
             }
@@ -108,6 +110,7 @@ namespace Compiler
                     Index++;
                     yield return Elements[i];
                 }
+                Index = 0;
             }
         }
 

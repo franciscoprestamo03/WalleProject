@@ -17,6 +17,13 @@ namespace Compiler
             Radius = radius;
             CenterRef = null;
         }
+        public CircleDeclarationNode(string name, Point pointRef, Node radius)
+        {
+            Name = name;
+            CenterRef = new PointDeclarationNode(pointRef.Name, new NumberNode(pointRef.X), new NumberNode(pointRef.Y));
+            Radius = radius;
+            CenterRef = null;
+        }
         public CircleDeclarationNode(string name)
         {
             Name = name;
