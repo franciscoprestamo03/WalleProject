@@ -108,9 +108,18 @@ namespace Compiler
                         }
                         else if (item is Point p)
                         {
+                            Debug.Log($"fase 2 :::::::::::::  {p.X} {p.Y}");
                             instanciablesScopes.Peek().Add(multipleVariableDeclarationNode.VariableNames[j].Value, p);
                             Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value,
                                 new PointDeclarationNode(p.Name, new NumberNode(p.X), new NumberNode(p.Y))));
+                        }else if( item is VariableReferenceNode varRef)
+                        {
+                            Debug.Log("::::::::::::::::::::::::::::::::::::::"+item.GetType());
+                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value, varRef));
+                        }
+                        else
+                        {
+                            Debug.Log("::::::::::::::::::::::::::::::::::::::"+item.GetType());
                         }
 
                         j++;
@@ -503,7 +512,15 @@ namespace Compiler
                             Evaluate(variableDeclaration);
                         }
 
-                        object? result4 = function.Body != null ? EvaluateBlock(function.Body) : null;
+                        //object? result4 = function.Body != null ? EvaluateBlock(function.Body) : null;
+                        if (function.Body is not null)
+                        {
+                            foreach (var item in function.Body)
+                            {
+                                Debug.Log($"====================================.......................................{item}");
+                                Evaluate(item);
+                            }
+                        }
 
                         object? result5 = Evaluate(function.ReturnNode);
 
