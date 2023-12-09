@@ -22,6 +22,7 @@ namespace Compiler
         public int iterations;
 
         private int Counter;
+
         public Evaluator()
         {
             result = new List<Instaciable>();
@@ -38,7 +39,6 @@ namespace Compiler
 
         public string EvaluateMain(MainProgramNode node)
         {
-            
             output = "";
             iterations = 1;
             System.Console.WriteLine(iterations++);
@@ -46,6 +46,7 @@ namespace Compiler
 
             return output;
         }
+
         public object? Evaluate(Node node)
         {
             Counter++;
@@ -53,6 +54,7 @@ namespace Compiler
             {
                 throw new Exception("Hulk Stack Overflow");
             }
+
             Dictionary<string, FunctionDeclarationNode> scope;
             switch (node)
             {
@@ -68,79 +70,93 @@ namespace Compiler
                     int j = 0;
                     Debug.Log("fase 0");
                     Debug.Log(Evaluate(multipleVariableDeclarationNode.SequenceN));
-                    SequenceNode sequence =  (SequenceNode)Evaluate(multipleVariableDeclarationNode.SequenceN);
+                    SequenceNode sequence = (SequenceNode)Evaluate(multipleVariableDeclarationNode.SequenceN);
                     int prevIndex = sequence.Index;
-                    foreach (var item in sequence)
+                    foreach (var item2 in sequence)
                     {
-                        Debug.Log("fase 1  item = "+item+" type "+item.GetType());
-                        if (j == multipleVariableDeclarationNode.VariableNames.Count-1)
+                        object item;
+                        if (item2 is Node node02)
                         {
-                            var seq = new SequenceNode(sequence.Elements,sequence.Type,sequence.Index-1,sequence.IsInfinite,sequence.Initial,sequence.End);
+                            item = Evaluate(node02);
+                        }
+                        else
+                        {
+                            item = item2;
+                        }
+                        
+                        Debug.Log("fase 1  item = " + item + " type " + item.GetType());
+                        if (j == multipleVariableDeclarationNode.VariableNames.Count - 1)
+                        {
+                            var seq = new SequenceNode(sequence.Elements, sequence.Type, sequence.Index - 1,
+                                sequence.IsInfinite, sequence.Initial, sequence.End);
                             //seq.Index = sequence.Index + j;
-                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value, seq));
+                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value,
+                                seq));
                             break;
                         }
                         else if (item is int x)
                         {
                             Debug.Log("fase 2");
-                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value, new NumberNode(x)));
+                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value,
+                                new NumberNode(x)));
                         }
-                        else if(item is string s)
+                        else if (item is string s)
                         {
                             Debug.Log("fase 2");
-                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value, new StringNode(s)));
-                        }else if (item is Point p)
+                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value,
+                                new StringNode(s)));
+                        }
+                        else if (item is Point p)
                         {
                             instanciablesScopes.Peek().Add(multipleVariableDeclarationNode.VariableNames[j].Value, p);
-                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value, new PointDeclarationNode(p.Name,p.X,p.Y)));
+                            Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value,
+                                new PointDeclarationNode(p.Name, new NumberNode(p.X), new NumberNode(p.Y))));
                         }
-                        
+
                         j++;
                     }
+
                     sequence.Index = prevIndex;
                     return null;
                 case PointDeclarationNode pointDeclarationNode:
                     Counter--;
 
-                    if (instanciablesScopes.Peek().ContainsKey(pointDeclarationNode.Name))
+                    double x1 = (double)Evaluate(pointDeclarationNode.X);
+                    double y1 = (double)Evaluate(pointDeclarationNode.Y);
+                    
+                    Debug.Log($" {pointDeclarationNode.Name}================================================================>>>>>> {Evaluate(pointDeclarationNode.X)}");
+                    Debug.Log($"{pointDeclarationNode.Name}================================================================>>>>>> {Evaluate(pointDeclarationNode.Y)}");
+                    
+                    Point point = new Point(x1.ToString()+y1.ToString(),(int)x1 ,(int)y1);
+                    string s1 = x1.ToString() + y1.ToString();
+                    if (!instanciablesScopes.Peek().ContainsKey(s1))
                     {
-                        Instaciable ins = instanciablesScopes.Peek()[pointDeclarationNode.Name];
-                        if (ins is Point p)
-                        {
-                            return p;
-                        }
-                        else
-                        {
-                            throw new Exception("Error with point type");
-                        }
-                        
+                        instanciablesScopes.Peek().Add(x1.ToString()+y1.ToString(), point);
                     }
-
-                    Point point = new Point(pointDeclarationNode.Name, pointDeclarationNode.X, pointDeclarationNode.Y);
-                    instanciablesScopes.Peek().Add(pointDeclarationNode.Name,point);
+                    
                     return point;
                 case CircleDeclarationNode circleDeclarationNode:
                     Counter--;
-                    if (instanciablesScopes.Peek().ContainsKey(circleDeclarationNode.Name))
-                    {
-                        output += $"Point '{circleDeclarationNode.Name}' already exists.";
-                        throw new Exception($"Point '{circleDeclarationNode.Name}' already exists.");
-                    }
-
                     if (circleDeclarationNode.CenterRef is null)
                     {
-                        Point center = null ;
-                        Instaciable instance03 = FindINstanciableScope(circleDeclarationNode.CenterStrRef)[circleDeclarationNode.CenterStrRef];
-                        if (instance03.Type == InstanciableType.point)
+                        Point center = null;
+                        var instance03 = FindVariableScope(circleDeclarationNode.CenterStrRef);
+                        if (instance03 is not null && instance03[circleDeclarationNode.CenterStrRef] is Point pointP0)
                         {
-                            center = (Point)instance03;
+                            center = pointP0;
                             Debug.Log("circle node log");
-                            
+
                             Measure r = (Measure)Evaluate(circleDeclarationNode.Radius);
 
                             Circle circle = new Circle(circleDeclarationNode.Name, center, r.Value);
 
-                            instanciablesScopes.Peek().Add(circleDeclarationNode.Name, circle);
+                            string circleName = "circle" + center.ToString() + r.Value.ToString();
+                            if (!instanciablesScopes.Peek()
+                                    .ContainsKey(circleName))
+                            {
+                                instanciablesScopes.Peek().Add(circleName, circle);
+                            }
+                            
 
                             return circle;
                         }
@@ -161,35 +177,36 @@ namespace Compiler
 
                         return circle;
                     }
-                    
+
                 case LineDeclarationNode lineDeclarationNode:
                     Counter--;
-                    Debug.Log("line declaration " + lineDeclarationNode.pointName1 + " " + lineDeclarationNode.pointName2);
+                    Debug.Log("line declaration " + lineDeclarationNode.pointName1 + " " +
+                              lineDeclarationNode.pointName2);
                     string lineName = lineDeclarationNode.pointName1 + lineDeclarationNode.pointName2;
                     if (instanciablesScopes.Peek().ContainsKey(lineName))
                     {
                         output += $"Line '{lineName}' already exists.";
                         throw new Exception($"Line '{lineName}' already exists.");
                     }
-                    Point point4 = null ;
+
+                    Point point4 = null;
                     Point point5 = null;
-                    Instaciable instance1 = FindINstanciableScope(lineDeclarationNode.pointName1)[lineDeclarationNode.pointName1];
-                    if (instance1.Type == InstanciableType.point)
+                    var SearchInstance1 = FindVariableScope(lineDeclarationNode.pointName1);
+
+                    if (SearchInstance1 is not null && SearchInstance1[lineDeclarationNode.pointName1] is Point pointP1)
                     {
-                        point4 = (Point)instance1;
+                        point4 = pointP1;
                         Debug.Log("LineNode log");
-                        
                     }
                     else
                     {
-                        throw new Exception($"Point '{lineDeclarationNode.pointName1}' doesen't exists.");
                     }
-                    Instaciable instance2 = FindINstanciableScope(lineDeclarationNode.pointName2)[lineDeclarationNode.pointName2];
-                    if (instance1.Type == InstanciableType.point)
+
+                    var SearchInstance2 = FindVariableScope(lineDeclarationNode.pointName1);
+                    if (SearchInstance2 is not null && SearchInstance2[lineDeclarationNode.pointName2] is Point pointP2)
                     {
-                        point5 = (Point)instance2;
+                        point5 = pointP2;
                         Debug.Log("LineNode log");
-                        
                     }
                     else
                     {
@@ -211,14 +228,17 @@ namespace Compiler
                         {
                             case VariableReferenceNode varRef:
 
-                                Dictionary<string, Instaciable>? dic = FindINstanciableScope(varRef.Name);
-                                
-                                if (dic is null)
+                                Dictionary<string, object>? dic1 = FindVariableScope(varRef.Name);
+                                Debug.Log(
+                                    $"haciendo referencia ===============================> {varRef.Name} dictionary =====> {dic1 is null}");
+
+
+                                if (dic1 is not null)
                                 {
-                                    Debug.Log("referencia "+varRef.Name);
-                                    object val = FindVariableScope(varRef.Name)[varRef.Name];
+                                    Debug.Log("referencia " + varRef.Name);
+                                    object val = dic1[varRef.Name];
                                     Debug.Log("hey hello");
-                                    if(val is Line lineA)
+                                    if (val is Line lineA)
                                     {
                                         this.result.Add(lineA);
                                     }
@@ -226,11 +246,19 @@ namespace Compiler
                                     {
                                         this.result.Add(pointA);
                                     }
-                                    else if(val is Circle c)
+                                    else if (val is Circle c)
                                     {
+                                        Debug.Log($"dibujando circulo {c.Name}  {c.Center} {c.Radius}");
                                         this.result.Add(c);
                                     }
+
                                     break;
+                                }
+
+                                Dictionary<string, Instaciable>? dic = FindINstanciableScope(varRef.Name);
+                                if (dic is null)
+                                {
+                                    throw new Exception("Hay algo mal ");
                                 }
 
                                 Instaciable instance = dic[varRef.Name];
@@ -241,13 +269,15 @@ namespace Compiler
                                     Debug.Log("drawNode log");
                                     this.result.Add(point2);
                                 }
-                                else if(instance.Type == InstanciableType.circle)
+                                else if (instance.Type == InstanciableType.circle)
                                 {
                                     Circle circle1 = (Circle)instance;
                                     Point point2 = circle1.Center;
                                     this.result.Add(point2);
                                     this.result.Add(circle1);
                                 }
+
+
                                 break;
                             case VariableDeclarationNode variableDeclarationNode:
                                 Debug.Log("draw node log 00002");
@@ -269,13 +299,13 @@ namespace Compiler
 
                                 break;
                             default:
-                                
+
                                 break;
                         }
                     }
 
                     return null;
-                    
+
                 case BinaryExpressionNode binaryExpressionNode:
                     Counter--;
                     return EvaluateBinaryExpression(binaryExpressionNode);
@@ -343,10 +373,10 @@ namespace Compiler
                         {
                             value2 = Evaluate(argument);
                             Console.WriteLine("value => " + value2);
-                            Debug.Log("printing =====> "+value2);
+                            Debug.Log("printing =====> " + value2);
                             output += $"{value2}";
-
                         }
+
                         System.Console.WriteLine("Out Function print");
                         Counter--;
                         return value2;
@@ -360,8 +390,8 @@ namespace Compiler
                             value3 = Evaluate(argument);
                             Console.WriteLine("value => " + value3);
                             output += $"{value3}\n";
-
                         }
+
                         Counter--;
                         return value3;
                     }
@@ -378,12 +408,20 @@ namespace Compiler
                             {
                                 if (a2 is Circle circle2)
                                 {
-                                    List<object> intersections = FindIntersectionPoints(circle1.Center.X,circle1.Center.Y,circle1.Radius,circle2.Center.X,circle2.Center.Y,circle2.Radius);
+                                    List<Point> intersections = FindIntersectionPoints(circle1.Center.X,
+                                        circle1.Center.Y, circle1.Radius, circle2.Center.X, circle2.Center.Y,
+                                        circle2.Radius);
                                     Debug.Log("Intersecciones 3");
-                                    return new SequenceNode(intersections, "intersect");
+                                    List<Node> nodesB = new List<Node>();
+                                    foreach (var item in intersections)
+                                    {
+                                        
+                                        nodesB.Add(new PointDeclarationNode(item.Name,new NumberNode(item.X),new NumberNode(item.Y)));
+                                    }
+                                    return new SequenceNode(nodesB, "intersect");
                                 }
                             }
-                            
+
                             throw new Exception("Bad Intersect declaration");
                         }
                         else
@@ -399,23 +437,24 @@ namespace Compiler
                             {
                                 if (functionCallNode.Arguments[1] is VariableReferenceNode pointCRef)
                                 {
-                                    Dictionary<string,Instaciable> dicPointB = FindINstanciableScope(pointBRef.Name);
-                                    if(dicPointB is null)
+                                    var searchPoint1 = FindVariableScope(pointBRef.Name);
+                                    if (searchPoint1 is null)
                                     {
                                         throw new Exception($"{pointBRef.Name} doesn't exist");
                                     }
-                                    Instaciable pointBIns = dicPointB[pointBRef.Name];
-                                    if(pointBIns is Point pointB)
+
+                                    if (searchPoint1[pointBRef.Name] is Point pointB)
                                     {
-                                        Dictionary<string, Instaciable> dicPointC = FindINstanciableScope(pointCRef.Name);
-                                        if (dicPointC is null)
+                                        var searchPoint2 = FindVariableScope(pointCRef.Name);
+                                        if (searchPoint2 is null)
                                         {
                                             throw new Exception($"{pointCRef.Name} doesn't exist");
                                         }
-                                        Instaciable pointCIns = dicPointC[pointCRef.Name];
-                                        if (pointCIns is Point pointC)
+
+                                        if (searchPoint2[pointCRef.Name] is Point pointC)
                                         {
-                                            double m = Math.Sqrt((pointB.X-pointC.X) * (pointB.X - pointC.X) + (pointB.Y - pointC.Y) * (pointB.Y - pointC.Y));
+                                            double m = Math.Sqrt((pointB.X - pointC.X) * (pointB.X - pointC.X) +
+                                                                 (pointB.Y - pointC.Y) * (pointB.Y - pointC.Y));
                                             Debug.Log($"medida es igual a {m}");
                                             return new Measure(m);
                                         }
@@ -426,7 +465,7 @@ namespace Compiler
                                     }
                                     else
                                     {
-                                        throw new Exception($"{pointBRef.Name} isent't a Point");
+                                        throw new Exception($"{pointBRef.Name} isn't a Point");
                                     }
                                 }
                                 else
@@ -445,52 +484,8 @@ namespace Compiler
                             throw new Exception($"Function measure(x,y) receive two arguments");
                         }
                     }
-                    else if (functionCallNode.Name == "draw1")
-                    {
-                        Debug.Log("heyyyy11111111");
-                        System.Console.WriteLine("Function printLine");
-                        object? value3 = null;
-                        foreach (Node argument in functionCallNode.Arguments)
-                        {
-                            Debug.Log("heyyyyyyyy222222222");
-                            Debug.Log(argument);
-                            switch (argument)
-                            {
-                                case VariableReferenceNode varRef:
-                                    Instaciable instance = FindINstanciableScope(varRef.Name)[varRef.Name];
-                                    if (instance.Type == InstanciableType.point)
-                                    {
-                                        Point point3 = (Point)instance;
-                                        Debug.Log("heyyyyyyyy3333333");
-                                        this.result.Add(point3);
-                                    }
-                                    break;
-                                case PointDeclarationNode pointDeclarationNode:
-                                    if (instanciablesScopes.Peek().ContainsKey(pointDeclarationNode.Name))
-                                    {
-                                        output += $"Function '{pointDeclarationNode.Name}' already exists.";
-                                        throw new Exception($"Function '{pointDeclarationNode.Name}' already exists.");
-                                    }
-                                    Point point0 = new Point(pointDeclarationNode.Name, pointDeclarationNode.X, pointDeclarationNode.Y);
-                                    instanciablesScopes.Peek().Add(pointDeclarationNode.Name, point0);
-                                    this.result.Add(point0);
-
-
-                                    break;
-                                    
-                                default:
-                                    break;
-                            }
-                            
-                            
-
-                        }
-                        Counter--;
-                        return null;
-                    }
                     else if ((scope = FindFuntionScope(functionCallNode.Name)) != null)
                     {
-
                         FunctionDeclarationNode function = scope[functionCallNode.Name];
 
                         EnterScope();
@@ -499,6 +494,7 @@ namespace Compiler
                         {
                             throw new Exception($"Function requires exact {function.Parameters.Count} arguments");
                         }
+
                         for (int i = 0; i < function.Parameters.Count; i++)
                         {
                             VariableDeclarationNode variableDeclaration = function.Parameters[i];
@@ -506,6 +502,7 @@ namespace Compiler
 
                             Evaluate(variableDeclaration);
                         }
+
                         object? result4 = function.Body != null ? EvaluateBlock(function.Body) : null;
 
                         object? result5 = Evaluate(function.ReturnNode);
@@ -533,7 +530,7 @@ namespace Compiler
                 case VariableDeclarationNode variableDeclarationNode:
                     Debug.Log(variableDeclarationNode.Name);
                     Debug.Log(variableDeclarationNode.Initializer.GetType());
-                    
+
 
                     if (scopes.Peek().ContainsKey(variableDeclarationNode.Name))
                     {
@@ -575,7 +572,6 @@ namespace Compiler
                         ExitScope();
                         Counter--;
                         return result1;
-
                     }
                     else if (ifNode.ElseStatements != null)
                     {
@@ -602,6 +598,7 @@ namespace Compiler
                         {
                             whileIterations++;
                         }
+
                         EnterScope();
                         System.Console.WriteLine("before " + iterations++);
                         EvaluateBlock(whileNode.BodyStatements);
@@ -609,6 +606,7 @@ namespace Compiler
                         ExitScope();
                         loopConditionValue = Evaluate(whileNode.Condition);
                     }
+
                     whileIterations = 0;
                     Counter--;
                     return null;
@@ -618,6 +616,7 @@ namespace Compiler
                     {
                         Evaluate(variableDeclaration);
                     }
+
                     object result3 = EvaluateBlock(letNode.Body);
                     ExitScope();
                     Counter--;
@@ -640,6 +639,7 @@ namespace Compiler
 
             return null;
         }
+
         private Dictionary<string, object> FindVariableScope(string variableName)
         {
             foreach (Dictionary<string, object> scope in scopes)
@@ -665,14 +665,14 @@ namespace Compiler
 
         private Dictionary<string, Instaciable> FindINstanciableScope(string variableName)
         {
-            foreach (Dictionary<string,Instaciable> scope in instanciablesScopes)
+            foreach (Dictionary<string, Instaciable> scope in instanciablesScopes)
             {
                 if (scope.ContainsKey(variableName))
                 {
                     return scope;
                 }
             }
-            
+
             return null;
         }
 
@@ -696,7 +696,6 @@ namespace Compiler
 
         private object EvaluateBinaryExpression(BinaryExpressionNode node)
         {
-
             object left = Evaluate(node.Left);
             object right = Evaluate(node.Right);
 
@@ -778,8 +777,8 @@ namespace Compiler
                     }
                     else
                     {
-
-                        throw new Exception($"Cannot apply modulus to {left?.GetType().Name} and {right?.GetType().Name}");
+                        throw new Exception(
+                            $"Cannot apply modulus to {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 case TokenType.PowToken:
                     if (left is double leftDoublePow && right is double rightDoublePow)
@@ -788,8 +787,8 @@ namespace Compiler
                     }
                     else
                     {
-
-                        throw new Exception($"Cannot apply exponenciation to {left?.GetType().Name} and {right?.GetType().Name}");
+                        throw new Exception(
+                            $"Cannot apply exponenciation to {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 case TokenType.EqualityToken:
                     return left.Equals(right);
@@ -843,7 +842,8 @@ namespace Compiler
                     else
                     {
                         output += $"Cannot perform logical AND on {left?.GetType().Name} and {right?.GetType().Name}";
-                        throw new Exception($"Cannot perform logical AND on {left?.GetType().Name} and {right?.GetType().Name}");
+                        throw new Exception(
+                            $"Cannot perform logical AND on {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 case TokenType.LogicalOrToken:
                     if (left is bool leftBoolOr && right is bool rightBoolOr)
@@ -853,7 +853,8 @@ namespace Compiler
                     else
                     {
                         output += $"Cannot perform logical OR on {left?.GetType().Name} and {right?.GetType().Name}";
-                        throw new Exception($"Cannot perform logical OR on {left?.GetType().Name} and {right?.GetType().Name}");
+                        throw new Exception(
+                            $"Cannot perform logical OR on {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 default:
                     output += $"Unknown binary operator {node.Operator.Value}";
@@ -863,7 +864,6 @@ namespace Compiler
 
         private object EvaluateUnaryExpression(UnaryExpressionNode node)
         {
-
             object operand = Evaluate(node.Expression);
 
             switch (node.Operator.Type)
@@ -895,18 +895,19 @@ namespace Compiler
 
         private object EvaluateBlock(List<Node> statements)
         {
-
             object result = null;
             foreach (Node statement in statements)
             {
                 result = Evaluate(statement);
             }
+
             return result;
         }
-        
-        public static List<object> FindIntersectionPoints(double x1, double y1, double r1, double x2, double y2, double r2)
+
+        public static List<Point> FindIntersectionPoints(double x1, double y1, double r1, double x2, double y2,
+            double r2)
         {
-            List<object> intersections = new List<object>();
+            List<Point> intersections = new List<Point>();
 
             // Calculamos la distancia entre los centros de las circunferencias
             double distance = Math.Sqrt(Math.Pow(x2 - x1, 2) + Math.Pow(y2 - y1, 2));
@@ -929,11 +930,10 @@ namespace Compiler
 
 
             // Agregamos los puntos de intersección a la lista
-            intersections.Add(new Point(x5.ToString()+y5.ToString(),(int)x5, (int)y5));
-            intersections.Add(new Point(x4.ToString()+y4.ToString(),(int)x4,(int)y4));
+            intersections.Add(new Point(x5.ToString() + y5.ToString(), (int)x5, (int)y5));
+            intersections.Add(new Point(x4.ToString() + y4.ToString(), (int)x4, (int)y4));
 
             return intersections;
         }
     }
 }
-

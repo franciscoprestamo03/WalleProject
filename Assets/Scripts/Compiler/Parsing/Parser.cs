@@ -75,11 +75,11 @@ namespace Compiler
                         if (SequenceDesignator3.Type == TokenType.NumberToken)
                         {
                             Consume(TokenType.RightBraceToken, "Expected '}' after sequence declaration");
-                            return new SequenceNode(new List<object>(),"number",0,false,int.Parse(SequenceDesignator1.Value),int.Parse(SequenceDesignator3.Value));
+                            return new SequenceNode(new List<Node>(),"number",0,false,int.Parse(SequenceDesignator1.Value),int.Parse(SequenceDesignator3.Value));
                         }
                         else if(SequenceDesignator3.Type == TokenType.RightBraceToken)
                         {
-                            return new SequenceNode(new List<object>(),"number",0,true,int.Parse(SequenceDesignator1.Value),0);
+                            return new SequenceNode(new List<Node>(),"number",0,true,int.Parse(SequenceDesignator1.Value),0);
                         }
                         else
                         {
@@ -97,7 +97,34 @@ namespace Compiler
                 }
                 else if (SequenceDesignator1.Type == TokenType.RightBraceToken)
                 {
-                    return new SequenceNode(new List<object>(),"");
+                    return new SequenceNode(new List<Node>(),"");
+                }
+                else if (SequenceDesignator1.Type == TokenType.IdentifierToken)
+                {
+                    Debug.Log("Sequence with identifier");
+                    TokenM SequenceDesignator2 = Advance();
+                    if (SequenceDesignator2.Type == TokenType.CommaToken)
+                    {
+                        List<Node> nodesA = new List<Node>();
+                        nodesA.Add(new VariableReferenceNode(SequenceDesignator1.Value));
+                        
+                        do
+                        {
+                            TokenM actualToken = Advance();
+
+                            if (actualToken.Type == TokenType.IdentifierToken)
+                            {
+                                nodesA.Add(new VariableReferenceNode(actualToken.Value));
+                            }
+                            else if (actualToken.Type == TokenType.NumberToken)
+                            {
+                                nodesA.Add(new NumberNode(int.Parse(actualToken.Value)));
+                            }
+                            
+                        } while (Match(TokenType.CommaToken));
+                        Consume(TokenType.RightBraceToken, "Expected '}' after sequence declaration");
+                        return new SequenceNode(nodesA, "ids");
+                    }
                 }
 
 
@@ -114,8 +141,36 @@ namespace Compiler
                 else if(Match(TokenType.SequenceToken))
                 {
                     TokenM pointName = Consume(TokenType.IdentifierToken, "Expected point name after 'point' keyword.");
-                    SequenceNode sequenceNode = new SequenceNode(new List<object>(),"point", 0, true);
+                    SequenceNode sequenceNode = new SequenceNode(new List<Node>(),"point", 0, true);
                     return new VariableDeclarationNode(pointName.Value, sequenceNode, VariableType.Implicit);
+                }else if (Match(TokenType.LeftParenthesisToken))
+                {
+                    TokenM id1 = Advance();
+                    Consume(TokenType.CommaToken, "Expected ',' ");
+                    TokenM id2 = Advance();
+
+                    Consume(TokenType.RightParenthesisToken, "Expected ')' after line parameters.");
+                    if (id1.Type == TokenType.NumberToken && id2.Type == TokenType.NumberToken)
+                    {
+                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(),
+                            new NumberNode(int.Parse(id1.Value)), new NumberNode(int.Parse(id2.Value)));
+                    }
+                    else if (id1.Type == TokenType.NumberToken && id2.Type == TokenType.IdentifierToken)
+                    {
+                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(),
+                            new NumberNode(int.Parse(id1.Value)), new VariableReferenceNode(id2.Value));
+                    }
+                    else if (id2.Type == TokenType.NumberToken && id1.Type == TokenType.IdentifierToken)
+                    {
+                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(), new VariableReferenceNode(id1.Value),
+                            new NumberNode(int.Parse(id2.Value)));
+                    }
+                    else if (id2.Type == TokenType.IdentifierToken && id1.Type == TokenType.IdentifierToken)
+                    {
+                        return new PointDeclarationNode("point" + id1.ToString() + id2.ToString(), new VariableReferenceNode(id1.Value),
+                            new VariableReferenceNode(id2.Value));
+                    }
+                    
                 }
 
 
@@ -213,13 +268,45 @@ namespace Compiler
                     {
                         if (Check(TokenType.IdentifierToken))
                         {
-
+                            TokenM identifier = Consume(TokenType.IdentifierToken, "alooooooo");
+                            instanciables.Add(new VariableReferenceNode(identifier.Value));
                         }
-                        else if (true)
+                        else if (Match(TokenType.PointDeclaration))
+                        {
+                            if (Check(TokenType.IdentifierToken))
+                            {
+                                TokenM pointName = Consume(TokenType.IdentifierToken, "Expected point name after 'point' keyword.");
+                                PointDeclarationNode point = new PointDeclarationNode(pointName.Value);
+                                instanciables.Add(new VariableDeclarationNode(pointName.Value, point, VariableType.Point));
+                            }
+                        }
+                        else if (Match(TokenType.LineDeclaration))
                         {
 
+                            Debug.Log(tokens[currentTokenIndex].Type);
+                            if (Match(TokenType.LeftParenthesisToken))
+                            {
+                                TokenM pointName1 = Consume(TokenType.IdentifierToken, "Expected point name after 'point' keyword.");
+                                Consume(TokenType.CommaToken, "Expected ',' ");
+                                TokenM pointName2 = Consume(TokenType.IdentifierToken, "Expected point name after 'point' keyword.");
+
+                                Consume(TokenType.RightParenthesisToken, "Expected ')' after line parameters.");
+
+                                string lineName1 = pointName1.Value + pointName2.Value;
+                                LineDeclarationNode lineNode = new LineDeclarationNode(pointName1.Value, pointName2.Value);
+                                instanciables.Add(new VariableDeclarationNode(lineName1, lineNode, VariableType.Line));
+
+
+                            }
+                            else
+                            {
+                                throw new Exception("Bad line declaration");
+                            }
+                    
                         }
                     } while (Match(TokenType.CommaToken));
+
+                    Consume(TokenType.RightBraceToken, "Expected '}' token");
                 }
                 Debug.Log("Draw token bbbbbb");
                 return new DrawNode(instanciables);
@@ -673,7 +760,7 @@ namespace Compiler
                     {
                         do
                         {
-                            Node argument = ParseExpression();
+                            Node argument = ParseStatement();
                             arguments.Add(argument);
                         } while (Match(TokenType.CommaToken));
                     }

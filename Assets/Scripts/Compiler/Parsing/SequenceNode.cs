@@ -9,14 +9,14 @@ namespace Compiler
 {
     public class SequenceNode:Node
     {
-        public List<object> Elements { get; }
+        public List<Node> Elements { get; }
         public string Type { get; }
         public int Index { get; set; }
         public bool IsInfinite { get; }
         public int Initial { get; set; }
         public int End { get; }
 
-        public SequenceNode( List<object> elements,string type,int index=0,bool isInfinite = true, int initial = 0, int end = 0)
+        public SequenceNode( List<Node> elements,string type,int index=0,bool isInfinite = true, int initial = 0, int end = 0)
         {
             Elements = elements;
             Type = type;
