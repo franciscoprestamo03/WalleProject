@@ -8,7 +8,7 @@ namespace Compiler
     {
         private static readonly Dictionary<TokenGroup, Regex> tokenRegexes = new Dictionary<TokenGroup, Regex>
         {
-            { TokenGroup.Keyword, new Regex(@"^(let|var|if|else|for|while|return|function|in|true|false|point|circle|draw|line|sequence|import)$") },
+            { TokenGroup.Keyword, new Regex(@"^(let|var|if|else|for|while|return|function|in|true|false|point|circle|draw|line|sequence|import|segment)$") },
             { TokenGroup.VariablesTypes, new Regex(@"^(String|Number)$") },
             { TokenGroup.Variable, new Regex(@"^[_a-zA-Z][_a-zA-Z0-9]*$") },
             {
@@ -179,6 +179,8 @@ namespace Compiler
                     return TokenType.SequenceToken;
                 case "import":
                     return TokenType.ImportToken;
+                case "segment":
+                    return TokenType.SegmentToken;
             }
 
             throw new Exception("Invalid token " + input);

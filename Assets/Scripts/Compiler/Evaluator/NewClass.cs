@@ -285,7 +285,7 @@ namespace Compiler
                     }
 
 
-                    Line line = new Line(lineName, point4, point5);
+                    Line line = new Line(lineName, point4, point5,lineDeclarationNode.IsSegment);
 
                     instanciablesScopes.Peek().Add(line.Name, line);
 

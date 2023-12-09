@@ -73,6 +73,7 @@ namespace Compiler
         DrawToken,
         SequenceToken,
         ThreeDotsToken,
-        ImportToken
+        ImportToken,
+        SegmentToken
     }
 }

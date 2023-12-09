@@ -144,7 +144,8 @@ public class ReadInput : MonoBehaviour
 
                     Vector2 startPoint = new Vector2(line.X.X, line.X.Y);
                     Vector2 endPoint = new Vector2(line.Y.X, line.Y.Y);
-                    DrawLine(startPoint, endPoint, 2);
+                    DrawLine(startPoint, endPoint, 2,line.IsSegment);
+
                     break;
                 case Circle c:
                     radius = (float)c.Radius;
@@ -205,25 +206,38 @@ public class ReadInput : MonoBehaviour
         return Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), 1f);
     }
 
-    void DrawLine(Vector2 startPoint, Vector2 endPoint, int thickness)
+    void DrawLine(Vector2 startPoint, Vector2 endPoint, int thickness,bool isSegment)
     {
         GameObject line = new GameObject("Line");
         line.transform.position = startPoint;
         line.AddComponent<SpriteRenderer>();
         SpriteRenderer spriteRenderer = line.GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = CreateLineSprite(startPoint, endPoint, thickness);
+        spriteRenderer.sprite = CreateLineSprite(startPoint, endPoint, thickness,isSegment);
         line.transform.localScale = new Vector3(Vector2.Distance(startPoint, endPoint), thickness, 1f);
         line.transform.rotation = Quaternion.Euler(0f, 0f, GetAngle(startPoint, endPoint));
     }
 
-    Sprite CreateLineSprite(Vector2 startPoint, Vector2 endPoint, int thickness)
+    Sprite CreateLineSprite(Vector2 startPoint, Vector2 endPoint, int thickness, bool isSegment)
     {
         Texture2D texture = new Texture2D((int)(Vector2.Distance(startPoint, endPoint)), thickness);
         Color[] pixels = new Color[texture.width * texture.height];
 
+        int width = (int)Vector2.Distance(startPoint, endPoint);
+        int height = thickness;
+
         for (int i = 0; i < pixels.Length; i++)
         {
             pixels[i] = Color.white;
+        }
+
+        if (isSegment)
+        {
+            Debug.Log("is segment == true");
+            int segmentLength = Mathf.Min(width, height);
+            for (int i = 0; i < segmentLength; i++)
+            {
+                pixels[i] = Color.clear;
+            }
         }
 
         texture.SetPixels(pixels);

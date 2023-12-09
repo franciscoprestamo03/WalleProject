@@ -200,6 +200,23 @@ namespace Compiler
 
                 throw new Exception("Bad line declaration");
             }
+            if (Match(TokenType.SegmentToken))
+            {
+
+                if (Match(TokenType.LeftParenthesisToken))
+                {
+                    TokenM pointName1 = Consume(TokenType.IdentifierToken, "Expected point name after 'point' keyword.");
+                    Consume(TokenType.CommaToken, "Expected ',' ");
+                    TokenM pointName2 = Consume(TokenType.IdentifierToken, "Expected point name after 'point' keyword.");
+
+                    Consume(TokenType.RightParenthesisToken, "Expected ')' after line parameters.");
+
+                    return new LineDeclarationNode(pointName1.Value, pointName2.Value,true);
+
+                }
+
+                throw new Exception("Bad line declaration");
+            }
             else if (Match(TokenType.DrawToken))
             {
                 Debug.Log("Draw token aaaaaa");

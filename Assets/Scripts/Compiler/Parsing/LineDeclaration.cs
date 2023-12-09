@@ -7,11 +7,13 @@ namespace Compiler
 
         public string pointName1 { get; }
         public string pointName2 { get; }
+        public bool IsSegment { get; }
 
-        public LineDeclarationNode(string pointA, string pointB)
+        public LineDeclarationNode(string pointA, string pointB,bool isSegment = false)
         {
             pointName1 = pointA;
             pointName2 = pointB;
+            IsSegment = isSegment;
         }
     }
 }
