@@ -22,17 +22,17 @@ public class ReadInput : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        radius = 100;
-        segments = 30;
-        startAngle = 0f;
-        endAngle = 270f;
+        //radius = 100;
+        //segments = 30;
+        //startAngle = 0f;
+        //endAngle = 270f;
 
-        // Create the circle
-        GameObject circle = new GameObject("Circunference");
-        circle.transform.position = new Vector3(360f, 400f, 0f);
-        circle.AddComponent<SpriteRenderer>();
-        SpriteRenderer spriteRenderer = circle.GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = CreateCircleSprite(radius, segments, startAngle, endAngle);
+        //// Create the circle
+        //GameObject circle = new GameObject("Circunference");
+        //circle.transform.position = new Vector3(360f, 400f, 0f);
+        //circle.AddComponent<SpriteRenderer>();
+        //SpriteRenderer spriteRenderer = circle.GetComponent<SpriteRenderer>();
+        //spriteRenderer.sprite = CreateCircleSprite(radius, segments, startAngle, endAngle);
 
         //// Draw a line
         //Vector2 startPoint = new Vector2(100f, 200f);
