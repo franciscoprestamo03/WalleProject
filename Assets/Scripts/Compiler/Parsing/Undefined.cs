@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Compiler
 {
-    public class Undefined
+    public class Undefined:Node
     {
         public Undefined()
         {

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Security.Cryptography.X509Certificates;
+using JetBrains.Annotations;
 using UnityEngine;
 
 namespace Compiler
@@ -136,6 +137,7 @@ namespace Compiler
 
                     foreach (var item2 in sequence)
                     {
+                        Debug.Log("###################> item  in sequence : = "+item2+ " var =>  "+multipleVariableDeclarationNode.VariableNames[j].Value);
                         object item;
                         if (item2 is Node node02)
                         {
@@ -147,6 +149,7 @@ namespace Compiler
                         }
                         
                         Debug.Log("fase 1  item = " + item + " type " + item.GetType());
+                        
                         if (j == multipleVariableDeclarationNode.VariableNames.Count - 1)
                         {
                             var seq = new SequenceNode(sequence.Elements, sequence.Type, sequence.Index - 1,
@@ -179,16 +182,23 @@ namespace Compiler
                             Debug.Log("::::::::::::::::::::::::::::::::::::::"+item.GetType());
                             Evaluate(new VariableDeclarationNode(multipleVariableDeclarationNode.VariableNames[j].Value, varRef));
                         }
+                        else if(item is Undefined undefined)
+                        {
+                            Evaluate(new VariableDeclarationNode(
+                                multipleVariableDeclarationNode.VariableNames[j].Value,undefined));
+                        }
                         else
                         {
                             Debug.Log("::::::::::::::::::::::::::::::::::::::"+item.GetType());
                         }
-
                         j++;
+                        
                     }
 
                     sequence.Index = prevIndex;
                     return sequence;
+                case Undefined undefined:
+                    return undefined;
                 case PointDeclarationNode pointDeclarationNode:
                     Counter--;
 
@@ -489,6 +499,58 @@ namespace Compiler
                                         
                                         nodesB.Add(new PointDeclarationNode(item.Name,new NumberNode(item.X),new NumberNode(item.Y)));
                                     }
+                                    return new SequenceNode(nodesB, "intersect");
+                                }
+                                else if(a2 is Line line2)
+                                {
+                                    List<Point> intersections = FindIntersectionPointsCircleAndLine(circle1.Center.X,
+                                        circle1.Center.Y, circle1.Radius, line2.X.X, line2.X.Y,
+                                        line2.Y.X,line2.Y.Y);
+                                    Debug.Log("Intersecciones 3");
+                                    List<Node> nodesB = new List<Node>();
+                                    
+                                    foreach (var item in intersections)
+                                    {
+                                        
+                                        nodesB.Add(new PointDeclarationNode(item.Name,new NumberNode(item.X),new NumberNode(item.Y)));
+                                    }
+
+                                    
+                                    return new SequenceNode(nodesB, "intersect");
+                                }
+                            }
+                            else if (a1 is Line line1)
+                            {
+                                if (a2 is Line line2)
+                                {
+                                    List<Point> intersections =
+                                        FindIntersectionPointLineAndLine(line1.X, line1.Y, line2.X, line2.Y);
+                                    List<Node> nodesB = new List<Node>();
+                                    
+                                    foreach (var item in intersections)
+                                    {
+                                        
+                                        nodesB.Add(new PointDeclarationNode(item.Name,new NumberNode(item.X),new NumberNode(item.Y)));
+                                    }
+
+                                    
+                                    return new SequenceNode(nodesB, "intersect");
+                                }
+                                else if (a2 is Circle circle2)
+                                {
+                                    List<Point> intersections = FindIntersectionPointsCircleAndLine(circle2.Center.X,
+                                        circle2.Center.Y, circle2.Radius, line1.X.X, line1.X.Y,
+                                        line1.Y.X,line1.Y.Y);
+                                    Debug.Log("Intersecciones 3");
+                                    List<Node> nodesB = new List<Node>();
+                                    
+                                    foreach (var item in intersections)
+                                    {
+                                        
+                                        nodesB.Add(new PointDeclarationNode(item.Name,new NumberNode(item.X),new NumberNode(item.Y)));
+                                    }
+
+                                    
                                     return new SequenceNode(nodesB, "intersect");
                                 }
                             }
@@ -1013,6 +1075,70 @@ namespace Compiler
             intersections.Add(new Point(x4.ToString() + y4.ToString(), (int)x4, (int)y4));
 
             return intersections;
+        }
+        public static List<Point> FindIntersectionPointsCircleAndLine(double cx, double cy, double r, double x1, double y1, double x2, double y2)
+        {
+            List<Point> intersections = new List<Point>();
+
+            // Calculate the direction vector of the line
+            double dx = x2 - x1;
+            double dy = y2 - y1;
+
+            // Calculate the coefficients for the quadratic equation
+            double a = dx * dx + dy * dy;
+            double b = 2 * (dx * (x1 - cx) + dy * (y1 - cy));
+            double c = (x1 - cx) * (x1 - cx) + (y1 - cy) * (y1 - cy) - r * r;
+
+            // Calculate the discriminant
+            double discriminant = b * b - 4 * a * c;
+
+            // If the discriminant is negative, the line and circle do not intersect
+            if (discriminant < 0)
+            {
+                return intersections;
+            }
+
+            // Calculate the intersection points
+            double t1 = (-b + Math.Sqrt(discriminant)) / (2 * a);
+            double t2 = (-b - Math.Sqrt(discriminant)) / (2 * a);
+            double x3 = x1 + t1 * dx;
+            double y3 = y1 + t1 * dy;
+            double x4 = x1 + t2 * dx;
+            double y4 = y1 + t2 * dy;
+
+            // Add the intersection points to the list
+            intersections.Add(new Point(x3.ToString() + y3.ToString(), (int)x3, (int)y3));
+            intersections.Add(new Point(x4.ToString() + y4.ToString(), (int)x4, (int)y4));
+
+            return intersections;
+        }
+        [ItemCanBeNull]
+        public static List<Point> FindIntersectionPointLineAndLine(Point p1, Point p2, Point p3, Point p4)
+        {
+            double x1 = p1.X;
+            double y1 = p1.Y;
+            double x2 = p2.X;
+            double y2 = p2.Y;
+            double x3 = p3.X;
+            double y3 = p3.Y;
+            double x4 = p4.X;
+            double y4 = p4.Y;
+
+            // Calculate the denominator
+            double denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+            // If the denominator is zero, the lines are parallel and do not intersect
+            if (denominator == 0)
+            {
+                return null;
+            }
+
+            // Calculate the intersection point coordinates
+            double x = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denominator;
+            double y = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denominator;
+            List<Point> result = new List<Point>();
+            result.Add(new Point(x.ToString()+y.ToString(),(int)x,(int)y));
+            return result;
         }
     }
 }

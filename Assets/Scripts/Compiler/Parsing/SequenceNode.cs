@@ -99,8 +99,11 @@ namespace Compiler
                 }
                 else
                 {
+                    for (int i = 0; i < 100; i++)
+                    {
+                        yield return new Undefined();
+                    }
                     
-                    yield return new Undefined();;
                 }
             }
             else if(Index<Elements.Count)
@@ -111,6 +114,14 @@ namespace Compiler
                     yield return Elements[i];
                 }
                 Index = 0;
+            }
+            else if(Index>=Elements.Count)
+            {
+                while (true)
+                {
+                    Index++;
+                    yield return new Undefined();
+                }
             }
         }
 
