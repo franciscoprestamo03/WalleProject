@@ -144,7 +144,22 @@ public class ReadInput : MonoBehaviour
 
                     Vector2 startPoint = new Vector2(line.X.X, line.X.Y);
                     Vector2 endPoint = new Vector2(line.Y.X, line.Y.Y);
-                    DrawLine(startPoint, endPoint, 2,line.IsSegment);
+                    if (false)
+                    {
+                        Debug.Log("dibujando un segmento");
+                        Debug.DrawLine(startPoint, endPoint, Color.red);
+                        GameObject segment = new GameObject("Segment");
+                        segment.transform.position = new Vector3((int)(Mathf.Abs(startPoint.x + endPoint.x)/2), (int)(Mathf.Abs(startPoint.y + endPoint.y) / 2), 0f);
+                        segment.AddComponent<SpriteRenderer>();
+                        SpriteRenderer spriteRenderer01 = segment.GetComponent<SpriteRenderer>();
+                        spriteRenderer01.sprite = CreateSegmentSprite01(startPoint, endPoint);
+                        
+                    }
+                    else
+                    {
+                        DrawLine(startPoint, endPoint, 2);
+                    }
+                    
 
                     break;
                 case Circle c:
@@ -171,6 +186,68 @@ public class ReadInput : MonoBehaviour
         
         Debug.Log("hello world");
 
+    }
+
+    public Sprite CreateSegmentSprite01(Vector2 startPoint, Vector2 endPoint)
+    {
+
+        Texture2D texture = new Texture2D((int)(Mathf.Abs(startPoint.x-endPoint.x)), (int)(Mathf.Abs(startPoint.y-endPoint.y)));
+        Color[] pixels = new Color[texture.width * texture.height];
+
+
+        float distX = endPoint.x - startPoint.x;
+        float distY = endPoint.y - startPoint.y;
+
+        
+
+        float m = distY / distX;
+        float b = startPoint.y - m * startPoint.x;
+
+        for (int i = 0; i < pixels.Length; i++)
+        {
+            int x = i % texture.width;
+            int y = i / texture.width;
+            float distance = Vector2.Distance(new Vector2(x, y), new Vector2(radius, radius));
+            float angle = Mathf.Atan2(y - radius, x - radius) * Mathf.Rad2Deg;
+            if (angle < 0)
+            {
+                angle += 360f;
+            }
+
+            // Verificar si el píxel está en la línea entre startPoint y endPoint
+            Vector2 pixelPosition = new Vector2(x, y);
+            
+            if (IsOnLine(pixelPosition, m, b))
+            {
+                pixels[i] = Color.white;
+            }
+            else
+            {
+                pixels[i] = Color.clear;
+            }
+        }
+
+        texture.SetPixels(pixels);
+        texture.Apply();
+
+        Rect rect = new Rect(0, 0, texture.width, texture.height);
+        return Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), 1f);
+    }
+
+    bool IsOnLine(Vector2 point, float m , float b)
+    {
+        
+
+        Debug.Log($"point {point.x} {point.y} m = {m} b = {b}  result {m * point.x + b}");
+
+        if( point.y > m * point.x + b + 210)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     Sprite CreateCircleSprite(float radius, int segments, float startAngle, float endAngle)
@@ -206,18 +283,18 @@ public class ReadInput : MonoBehaviour
         return Sprite.Create(texture, rect, new Vector2(0.5f, 0.5f), 1f);
     }
 
-    void DrawLine(Vector2 startPoint, Vector2 endPoint, int thickness,bool isSegment)
+    void DrawLine(Vector2 startPoint, Vector2 endPoint, int thickness)
     {
         GameObject line = new GameObject("Line");
         line.transform.position = startPoint;
         line.AddComponent<SpriteRenderer>();
         SpriteRenderer spriteRenderer = line.GetComponent<SpriteRenderer>();
-        spriteRenderer.sprite = CreateLineSprite(startPoint, endPoint, thickness,isSegment);
+        spriteRenderer.sprite = CreateLineSprite(startPoint, endPoint, thickness);
         line.transform.localScale = new Vector3(Vector2.Distance(startPoint, endPoint), thickness, 1f);
         line.transform.rotation = Quaternion.Euler(0f, 0f, GetAngle(startPoint, endPoint));
     }
 
-    Sprite CreateLineSprite(Vector2 startPoint, Vector2 endPoint, int thickness, bool isSegment)
+    Sprite CreateLineSprite(Vector2 startPoint, Vector2 endPoint, int thickness)
     {
         Texture2D texture = new Texture2D((int)(Vector2.Distance(startPoint, endPoint)), thickness);
         Color[] pixels = new Color[texture.width * texture.height];
@@ -230,15 +307,6 @@ public class ReadInput : MonoBehaviour
             pixels[i] = Color.white;
         }
 
-        if (isSegment)
-        {
-            Debug.Log("is segment == true");
-            int segmentLength = Mathf.Min(width, height);
-            for (int i = 0; i < segmentLength; i++)
-            {
-                pixels[i] = Color.clear;
-            }
-        }
 
         texture.SetPixels(pixels);
         texture.Apply();

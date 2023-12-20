@@ -51,10 +51,10 @@ namespace Compiler
         public object? Evaluate(Node node)
         {
             Counter++;
-            if (Counter > 80)
-            {
-                throw new Exception("Hulk Stack Overflow");
-            }
+            //if (Counter > 8000)
+            //{
+            //    throw new Exception("Hulk Stack Overflow");
+            //}
 
             Dictionary<string, FunctionDeclarationNode> scope;
             switch (node)
@@ -706,7 +706,37 @@ namespace Compiler
 
                 case IfNode ifNode:
                     object? conditionValue = Evaluate(ifNode.Condition);
-                    if (conditionValue is bool conditionBool && conditionBool)
+                    if (conditionValue is SequenceNode sequenceNodeCondition)
+                    {
+                        bool pass = false;
+                        foreach (var item in sequenceNodeCondition)
+                        {
+                            if (item is Undefined)
+                            {
+                                if (ifNode.ElseStatements != null)
+                                {
+                                    EnterScope();
+                                    object result2 = EvaluateBlock(ifNode.ElseStatements);
+                                    ExitScope();
+                                    Counter--;
+                                    return result2;
+                                }
+                                else
+                                {
+                                    Counter--;
+                                    return null;
+                                }
+                            }
+                            
+                            break;
+                        }
+                        EnterScope();
+                        object result1 = EvaluateBlock(ifNode.ThenStatements);
+                        ExitScope();
+                        Counter--;
+                        return result1;
+                    }
+                    else if (conditionValue is bool conditionBool && conditionBool)
                     {
                         EnterScope();
                         object result1 = EvaluateBlock(ifNode.ThenStatements);
@@ -897,6 +927,17 @@ namespace Compiler
                     {
                         return leftDoubleDiv / rightDoubleDiv;
                     }
+                    else if(left is Measure mesL2 && right is Measure mesR2)
+                    {
+                        int a = (int)mesL2.Value;
+                        int b = (int)mesR2.Value;
+                        Debug.Log($"lllllllllllllllllllllllllllllllllllllllllll {a / b} {mesL2.Value/mesR2.Value}");
+                        if(b == 0)
+                        {
+                            throw new DivideByZeroException();
+                        }
+                        return new Measure(mesL2.Value / mesR2.Value);
+                    }
                     else
                     {
                         output += $"Cannot divide {left?.GetType().Name} and {right?.GetType().Name}";
@@ -936,7 +977,22 @@ namespace Compiler
                 case TokenType.InequalityToken:
                     return !left.Equals(right);
                 case TokenType.LessThanToken:
-                    if (left is double leftDoubleLT && right is double rightDoubleLT)
+                    if (left is double leftLessThanToken1 && right is Measure mesLessThanTokenR1)
+                    {
+                        
+                        return leftLessThanToken1 < mesLessThanTokenR1.Value;
+                    }
+                    else if (left is Measure mesL1 && right is double rightDoubleMul1)
+                    {
+                        
+                        return mesL1.Value < rightDoubleMul1;
+                    }
+                    else if (left is Measure mesL2 && right is Measure mesR2)
+                    {
+                        
+                        return mesL2.Value < mesR2.Value;
+                    }
+                    else if (left is double leftDoubleLT && right is double rightDoubleLT)
                     {
                         return leftDoubleLT < rightDoubleLT;
                     }
@@ -946,7 +1002,22 @@ namespace Compiler
                         throw new Exception($"Cannot compare {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 case TokenType.LessThanOrEqualToken:
-                    if (left is double leftDoubleLTE && right is double rightDoubleLTE)
+                    if (left is double leftLessThanToken01 && right is Measure mesLessThanTokenR01)
+                    {
+
+                        return leftLessThanToken01 <= mesLessThanTokenR01.Value;
+                    }
+                    else if (left is Measure mesL1 && right is double rightDoubleMul1)
+                    {
+
+                        return mesL1.Value <= rightDoubleMul1;
+                    }
+                    else if (left is Measure mesL2 && right is Measure mesR2)
+                    {
+
+                        return mesL2.Value <= mesR2.Value;
+                    }
+                    else if (left is double leftDoubleLTE && right is double rightDoubleLTE)
                     {
                         return leftDoubleLTE <= rightDoubleLTE;
                     }
@@ -956,7 +1027,22 @@ namespace Compiler
                         throw new Exception($"Cannot compare {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 case TokenType.GreaterThanToken:
-                    if (left is double leftDoubleGT && right is double rightDoubleGT)
+                    if (left is double leftLessThanToken001 && right is Measure mesLessThanTokenR001)
+                    {
+
+                        return leftLessThanToken001 > mesLessThanTokenR001.Value;
+                    }
+                    else if (left is Measure mesL1 && right is double rightDoubleMul1)
+                    {
+
+                        return mesL1.Value > rightDoubleMul1;
+                    }
+                    else if (left is Measure mesL2 && right is Measure mesR2)
+                    {
+
+                        return mesL2.Value > mesR2.Value;
+                    }
+                    else if (left is double leftDoubleGT && right is double rightDoubleGT)
                     {
                         return leftDoubleGT > rightDoubleGT;
                     }
@@ -966,7 +1052,22 @@ namespace Compiler
                         throw new Exception($"Cannot compare {left?.GetType().Name} and {right?.GetType().Name}");
                     }
                 case TokenType.GreaterThanOrEqualToken:
-                    if (left is double leftDoubleGTE && right is double rightDoubleGTE)
+                    if (left is double leftLessThanToken0001 && right is Measure mesLessThanTokenR0001)
+                    {
+
+                        return leftLessThanToken0001 >= mesLessThanTokenR0001.Value;
+                    }
+                    else if (left is Measure mesL1 && right is double rightDoubleMul1)
+                    {
+
+                        return mesL1.Value >= rightDoubleMul1;
+                    }
+                    else if (left is Measure mesL2 && right is Measure mesR2)
+                    {
+
+                        return mesL2.Value >= mesR2.Value;
+                    }
+                    else if (left is double leftDoubleGTE && right is double rightDoubleGTE)
                     {
                         return leftDoubleGTE >= rightDoubleGTE;
                     }
